@@ -2,7 +2,4 @@
 
 
 
-Live URL-
-```bash
-https://illumi-refine-ai.vercel.app/
-```
+Live URL-  https://illumi-refine-ai.vercel.app/
