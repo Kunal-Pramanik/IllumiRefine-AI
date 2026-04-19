@@ -11,17 +11,15 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle file selection and local preview
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
       setPreview(URL.createObjectURL(file));
-      setResult(null); // Clear previous result
+      setResult(null); 
     }
   };
 
-  // Communicate with the Hugging Face Python Backend [cite: 12, 14, 21]
   const processImage = async () => {
     if (!selectedFile) return;
     setLoading(true);
@@ -31,7 +29,7 @@ function App() {
 
     try {
       const response = await axios.post(API_URL, formData, {
-        responseType: 'blob', // Important for handling image data
+        responseType: 'blob', 
       });
       const outputUrl = URL.createObjectURL(response.data);
       setResult(outputUrl);
@@ -128,15 +126,40 @@ function App() {
             )}
           </div>
         </div>
-
       </div>
 
-      {/* Footer / Methodology Note */}
-      <footer className="max-w-6xl mx-auto mt-12 text-center text-slate-500 text-sm border-t border-slate-800 pt-8">
-        <p>Built for Advanced Image Processing (IT507) [cite: 1]</p>
-        <p className="mt-2 text-slate-600">
-          Methodology: Log Transform → FFT → Gaussian High-Pass Filter → IFFT → CLAHE → Denoising [cite: 15-23, 24-32]
-        </p>
+      {/* Footer / Credits Section */}
+      <footer className="max-w-6xl mx-auto mt-16 text-center border-t border-slate-800 pt-10 pb-20">
+        <div className="flex flex-col items-center gap-6">
+          
+          <a 
+            href="https://github.com/Kunal-Pramanik/IllumiRefine-AI.git" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-sm font-medium text-slate-300 transition-all transform hover:scale-105"
+          >
+            <ImageIcon size={18} className="text-blue-400" />
+            Project Details & Documentation
+          </a>
+
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-slate-500 text-xs tracking-widest uppercase font-semibold">
+              Developed by
+            </p>
+            <a 
+              href="https://www.linkedin.com/in/kunal-pramanik-5aa131267" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-3xl font-black text-white hover:text-blue-400 transition-all duration-300 decoration-blue-500/30 underline-offset-8 hover:underline"
+            >
+              Kunal Pramanik
+            </a>
+          </div>
+
+          <p className="text-slate-600 text-[10px] uppercase tracking-tighter max-w-md">
+            Illumination-Reflectance Separation via Homomorphic Filtering
+          </p>
+        </div>
       </footer>
     </div>
   );
