@@ -56,14 +56,20 @@ class SCIFilter:
             # 1. AI estimates the Illumination Map
             illumination_map = self.model(img_tensor)
             
-            # --- NOVEL TWEAK 1: Adaptive Gamma Brightening ---
-            # Squaring the illumination map with a fractional power (gamma < 1) 
-            # safely boosts the brightness of the mid-tones without blowing out highlights.
-            gamma = 0.85 
-            adjusted_illum = torch.pow(illumination_map, gamma)
+            # 2. Standard Retinex Division
+            enhanced_tensor = img_tensor / (illumination_map + 1e-4) 
 
-            # Inverse Retinex separation
-            enhanced_tensor = img_tensor / (adjusted_illum + 1e-4) 
+            # --- NOVEL TWEAK 1: Exposure and Gamma Boost ---
+            # Multiply by a gain > 1 to artificially boost global brightness
+            exposure_gain = 1.8 
+            enhanced_tensor = enhanced_tensor * exposure_gain
+            
+            # Apply fractional gamma (< 1) to lift the dark shadows further 
+            # without blowing out the bright red clock
+            post_gamma = 0.75 
+            enhanced_tensor = torch.pow(enhanced_tensor, post_gamma)
+
+            # Clamp to ensure no pixels overflow to pure white artifacts
             enhanced_tensor = torch.clamp(enhanced_tensor, 0, 1)
 
         # Convert tensors back to OpenCV NumPy format
