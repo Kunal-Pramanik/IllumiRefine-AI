@@ -1,67 +1,83 @@
+import torch
+import torch.nn as nn
 import cv2
 import numpy as np
 
-class HomomorphicFilter:
-    def __init__(self, gl=0.5, gh=2.0, d0=30, c=1):
-        self.gl = gl
-        self.gh = gh
-        self.d0 = d0
-        self.c = c
+class EnhanceNetwork(nn.Module):
+    def __init__(self, layers=1, channels=3):
+        super(EnhanceNetwork, self).__init__()
+        
+        # 1. Input Convolution
+        self.in_conv = nn.Sequential(
+            nn.Conv2d(3, channels, kernel_size=3, stride=1, padding=1),
+            nn.ReLU()
+        )
+        # 2. Main Processing Block (Matches the keys in your error)
+        self.conv = nn.Sequential(
+            nn.Conv2d(channels, channels, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(channels),
+            nn.ReLU()
+        )
+        self.blocks = nn.ModuleList()
+        for i in range(layers):
+            self.blocks.append(self.conv)
+            
+        # 3. Output Convolution
+        self.out_conv = nn.Sequential(
+            nn.Conv2d(channels, 3, kernel_size=3, stride=1, padding=1),
+            nn.Sigmoid()
+        )
 
-    def __process_channel(self, channel):
-        # 1. Log Transform [cite: 18, 27]
-        img_log = np.log1p(np.array(channel, dtype="float"))
+    def forward(self, input):
+        fea = self.in_conv(input)
+        for conv in self.blocks:
+            fea = fea + conv(fea)
+        fea = self.out_conv(fea)
+        # SCI estimates the residual, so Illumination = Residual + Input
+        illum = fea + input 
+        return illum
+
+class SCIFilter:
+    def __init__(self, weights_path='weights/difficult.pt'):
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = EnhanceNetwork(layers=1, channels=3).to(self.device)
         
-        # 2. FFT [cite: 20, 28]
-        img_fft = np.fft.fft2(img_log)
-        img_fft_shift = np.fft.fftshift(img_fft)
-        
-        # 3. High-Pass Filter Mask [cite: 12, 21, 29]
-        rows, cols = channel.shape
-        crow, ccol = rows // 2, cols // 2
-        y, x = np.ogrid[-crow:rows-crow, -ccol:cols-ccol]
-        dist_sq = x*x + y*y
-        h_mask = (self.gh - self.gl) * (1 - np.exp(-self.c * (dist_sq / (self.d0**2)))) + self.gl
-        
-        # 4. Apply & Inverse [cite: 22, 30]
-        filtered = img_fft_shift * h_mask
-        img_ifft = np.fft.ifftshift(filtered)
-        img_back = np.fft.ifft2(img_ifft)
-        
-        # 5. Exp & Normalize
-        img_exp = np.expm1(np.real(img_back))
-        return np.uint8(cv2.normalize(img_exp, None, 0, 255, cv2.NORM_MINMAX))
+        try:
+            # 1. Load the full weights dictionary
+            full_state_dict = torch.load(weights_path, map_location=self.device)
+            
+            # 2. Extract ONLY the 'enhance' network keys
+            enhance_dict = {}
+            for key, value in full_state_dict.items():
+                if key.startswith('enhance.'):
+                    # Remove the 'enhance.' prefix so it matches our class names
+                    new_key = key.replace('enhance.', '')
+                    enhance_dict[new_key] = value
+                    
+            # 3. Load the filtered weights into our model
+            self.model.load_state_dict(enhance_dict)
+            self.model.eval()
+            print("✅ SCI Model loaded successfully!")
+        except Exception as e:
+            print(f"CRITICAL ERROR: {e}")
 
     def enhance(self, image_path):
         img = cv2.imread(image_path)
-        if img is None:
-            return None
+        if img is None: return None
+        
+        # Prepare image for PyTorch
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_normalized = (np.asarray(img) / 255.0).astype(np.float32)
+        img_tensor = torch.from_numpy(img_normalized).permute(2, 0, 1).unsqueeze(0).to(self.device)
 
-        # Convert to HSV (Hue, Saturation, Value) [cite: 17, 26]
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv)
-        
-        # 1. Enhance Brightness (V) using Homomorphic Filtering 
-        enhanced_v = self.__process_channel(v)
-        
-        # 2. Boost Saturation (S) to bring back colors [cite: 11, 23, 34]
-        # We increase saturation because low-light images look "washed out"
-        s = cv2.convertScaleAbs(s, alpha=1.2, beta=10) 
-        
-        # 3. Final Contrast Enhancement on V [cite: 23, 31]
-        enhanced_v = cv2.equalizeHist(enhanced_v)
-        
-        # Merge and convert back to BGR [cite: 23, 32, 38]
-        result_hsv = cv2.merge((h, s, enhanced_v))
-        enhanced_bgr = cv2.cvtColor(result_hsv, cv2.COLOR_HSV2BGR)
-        
-        # 4. Denoise to clean up the grain from low-light [cite: 35]
-        return cv2.fastNlMeansDenoisingColored(enhanced_bgr, None, 10, 10, 7, 21)
+        # Run AI Inference
+        with torch.no_grad():
+            illumination_map = self.model(img_tensor)
+            # Retinex formulation: Clear Image = Low Light / Illumination Map
+            enhanced_tensor = img_tensor / (illumination_map + 1e-4) 
+            enhanced_tensor = torch.clamp(enhanced_tensor, 0, 1)
 
-# Test it
-if __name__ == "__main__":
-    # Lower gl and moderate gh often look better for real color photos
-    hf = HomomorphicFilter(gl=0.5, gh=1.5, d0=40) 
-    result = hf.enhance('79.png')
-    if result is not None:
-        cv2.imwrite('enhanced_color_79.jpg', result)
+        # Convert back to OpenCV BGR format
+        enhanced_numpy = enhanced_tensor.squeeze().permute(1, 2, 0).cpu().numpy()
+        enhanced_bgr = cv2.cvtColor((enhanced_numpy * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
+        return enhanced_bgr

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Upload, Sun, Sparkles, Loader2, Download, Image as ImageIcon } from 'lucide-react';
 
 // Your specific Hugging Face Space URL
-const API_URL = "https://pramanikkunal65-low-light-enhancer.hf.space/enhance";
+const API_URL = "http://localhost:8000/enhance";
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
