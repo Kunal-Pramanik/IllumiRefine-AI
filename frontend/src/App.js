@@ -62,7 +62,8 @@ function App() {
             IllumiRefine AI
           </h1>
           <p className="text-slate-500 text-xs md:text-sm font-medium mt-1">
-            Homomorphic Filtering & Illumination Separation
+           A Hybrid Architecture Combining Self-Calibrated Illumination and Adaptive Frequency Fusion for Extreme Low-Light Image Enhancement 
+
           </p>
         </div>
 
