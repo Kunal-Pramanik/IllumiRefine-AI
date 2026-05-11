@@ -38,29 +38,29 @@ function App() {
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans p-4 md:px-10 md:py-6">
       
-      {/* Top Header & Navbar */}
-      <header className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-slate-800 pb-6">
-        <div className="text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            IllumiRefine AI
-          </h1>
-          <p className="text-slate-500 text-xs md:text-sm font-medium mt-1">
-            Homomorphic Filtering & Illumination Separation
-          </p>
-        </div>
+{/* Top Header & Navbar */}
+<header className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-slate-800 pb-6">
+  <div className="text-center md:text-left">
+    <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+      IllumiRefine AI
+    </h1>
+    <p className="text-slate-500 text-xs md:text-sm font-medium mt-1">
+      Homomorphic Filtering & Illumination Separation
+    </p>
+  </div>
 
-          {/* Branding & Links - Top Right */}
-          <div className="flex flex-col items-center md:items-end gap-2">
-            <a 
-              href="https://github.com/Kunal-Pramanik/IllumiRefine-AI.git" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-[11px] font-bold text-slate-300 transition-all shadow-lg shadow-black/20"
-            >
-              <Github size={14} /> Project Details
-            </a>
-          </div>
-                </header>
+  {/* Branding & Links - Top Right */}
+  <div className="flex flex-col items-center md:items-end gap-2">
+    <a 
+      href="https://github.com/Kunal-Pramanik/IllumiRefine-AI.git" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-[11px] font-bold text-slate-300 transition-all shadow-lg shadow-black/20"
+    >
+      <Github size={14} /> Project Details
+    </a>
+  </div>
+</header>
 
       {/* Main Content - Compact Grid */}
       <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
