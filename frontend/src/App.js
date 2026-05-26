@@ -70,9 +70,18 @@ function App() {
         {/* Branding & Links - Top Right */}
         <div className="flex flex-col items-center md:items-end gap-2">
           <a 
+            href="https://www.linkedin.com/in/kunal-pramanik-5aa131267" 
+            target="_blank" rel="noopener noreferrer"
+            className="group flex items-center gap-2"
+          >
+            <span className="text-slate-500 text-[10px] uppercase tracking-widest font-bold group-hover:text-blue-400">Developed by</span>
+            <span className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors flex items-center gap-1">
+              Kunal Pramanik <Linkedin size={14} className="text-blue-500" />
+            </span>
+          </a>
+          <a 
             href="https://github.com/Kunal-Pramanik/IllumiRefine-AI.git" 
-            target="_blank" 
-            rel="noopener noreferrer"
+            target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-[11px] font-bold text-slate-300 transition-all shadow-lg shadow-black/20"
           >
             <Github size={14} /> Project Details
