@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, Sun, Sparkles, Loader2, Download, Image as ImageIcon, Github } from 'lucide-react';
+import { Upload, Sun, Sparkles, Loader2, Download, Image as ImageIcon, Github, Linkedin } from 'lucide-react';
 
 // Your specific Hugging Face Space URL
 const API_URL = "https://pramanikkunal65-low-light-enhancer.hf.space/enhance";
@@ -63,7 +63,6 @@ function App() {
           </h1>
           <p className="text-slate-500 text-xs md:text-sm font-medium mt-1">
            A Hybrid Architecture Combining Self-Calibrated Illumination and Adaptive Frequency Fusion for Extreme Low-Light Image Enhancement 
-
           </p>
         </div>
 
